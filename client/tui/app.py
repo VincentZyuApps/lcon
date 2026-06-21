@@ -29,6 +29,7 @@ class LConApp(App):
         self._default_token = token
         self._mod_version = mod_version
         self.ws: WSClient | None = None
+        self._connecting = False
 
     def compose(self):
         yield Header()
@@ -51,34 +52,47 @@ class LConApp(App):
 
     def on_mount(self):
         self._update_settings_fields()
-        self.ws = WSClient(
-            host=self._default_host,
-            port=self._default_port,
-            token=self._default_token,
-            on_message=self._on_ws_message,
-            on_error=self._on_ws_error,
-            on_open=self._on_ws_open,
-            on_close=self._on_ws_close,
-        )
-        self.ws.connect()
+        self._do_connect(self._default_host, self._default_port, self._default_token)
 
     def _on_ws_message(self, message):
-        self.call_from_thread(self._add_console_log, f"[white]< {message}[/white]")
+        self.call_from_thread(self._add_console_log, f"[white]📩 {message}[/white]")
 
     def _on_ws_error(self, error):
-        self.call_from_thread(self._add_console_log, f"[red]! Error: {error}[/red]")
+        self._connecting = False
+        self.call_from_thread(self._set_connection_status, "disconnected")
+        error_lower = error.lower()
+        if "refused" in error_lower:
+            msg = "[red]❌ Connection refused — is LCon mod running?[/red]"
+        elif "timeout" in error_lower:
+            msg = f"[red]⏰ {error}[/red]"
+        else:
+            msg = f"[red]❌ {error}[/red]"
+        self.call_from_thread(self._add_console_log, msg)
+        self.call_from_thread(
+            self._update_settings_status, "Status: [red]Connection failed[/red]"
+        )
 
     def _on_ws_open(self):
-        self.call_from_thread(self._add_console_log, "[green]! Connected[/green]")
+        self._connecting = False
+        self.call_from_thread(self._set_connection_status, "connected")
+        self.call_from_thread(self._add_console_log, "[green]✅ Connected[/green]")
         self.call_from_thread(
             self._update_settings_status, "Status: [green]Connected[/green]"
         )
 
     def _on_ws_close(self):
-        self.call_from_thread(self._add_console_log, "[yellow]! Disconnected[/yellow]")
+        self._connecting = False
+        self.call_from_thread(self._set_connection_status, "disconnected")
+        self.call_from_thread(self._add_console_log, "[yellow]🔌 Disconnected[/yellow]")
         self.call_from_thread(
             self._update_settings_status, "Status: [yellow]Disconnected[/yellow]"
         )
+
+    def _set_connection_status(self, status):
+        try:
+            self.query_one(ConsoleTab).set_connection_status(status)
+        except Exception:
+            pass
 
     def _update_settings_fields(self):
         try:
@@ -101,18 +115,24 @@ class LConApp(App):
         except Exception:
             pass
 
-    def connect_ws(self, host, port, token):
-        self.disconnect_ws()
+    def _do_connect(self, host, port, token):
+        self._connecting = True
         self.ws = WSClient(
             host=host,
             port=port,
             token=token,
+            timeout=15,
             on_message=self._on_ws_message,
             on_error=self._on_ws_error,
             on_open=self._on_ws_open,
             on_close=self._on_ws_close,
         )
+        self.call_later(self._set_connection_status, "connecting")
         self.ws.connect()
+
+    def connect_ws(self, host, port, token):
+        self.disconnect_ws()
+        self._do_connect(host, port, token)
 
     def disconnect_ws(self):
         if self.ws:

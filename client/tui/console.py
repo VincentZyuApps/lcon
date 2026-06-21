@@ -24,6 +24,9 @@ class PrefixInput(Input):
         super().__init__(*args, **kwargs)
 
 
+SPINNER_CHARS = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+
+
 class ConsoleTab(Widget):
     PREFIXES = ["server", "client", "chat", "message", "system"]
     PREFIX_LABELS = ["SERVER", "CLIENT", "CHAT", "MESSAGE", "SYSTEM"]
@@ -40,6 +43,9 @@ class ConsoleTab(Widget):
         super().__init__()
         self._prefix_idx = 0
         self._auto_on = True
+        self._status = "connecting"
+        self._spinner_idx = 0
+        self._spinner_timer = None
 
     def compose(self):
         yield RichLog(id="log", highlight=True, markup=True, max_lines=10000)
@@ -50,7 +56,9 @@ class ConsoleTab(Widget):
             yield Button("Send", id="send", variant="primary")
 
     def on_mount(self):
+        self._spinner_timer = self.set_interval(0.3, self._tick_spinner)
         self._update_ui()
+        self.add_log("[dim]⏳ Connecting...[/dim]")
 
     def add_log(self, message):
         try:
@@ -74,6 +82,21 @@ class ConsoleTab(Widget):
         self._auto_on = not self._auto_on
         self._update_ui()
 
+    def set_connection_status(self, status):
+        self._status = status
+        if status == "connecting":
+            self._spinner_idx = 0
+            self._spinner_timer = self.set_interval(0.3, self._tick_spinner)
+        else:
+            if self._spinner_timer:
+                self._spinner_timer.stop()
+                self._spinner_timer = None
+        self._update_ui()
+
+    def _tick_spinner(self):
+        self._spinner_idx = (self._spinner_idx + 1) % len(SPINNER_CHARS)
+        self._update_ui()
+
     def _update_ui(self):
         prefix = self.PREFIXES[self._prefix_idx]
         label = self.PREFIX_LABELS[self._prefix_idx]
@@ -81,10 +104,20 @@ class ConsoleTab(Widget):
             self.query_one("#prefix-label", Static).update(f"[{prefix}]")
         except Exception:
             pass
-        mode_text = f"▸ Mode: {label} | Auto: {'ON' if self._auto_on else 'OFF'}"
+
+        mode_part = f"Mode: {label} | Auto: {'ON' if self._auto_on else 'OFF'}"
+
+        if self._status == "connecting":
+            spinner = SPINNER_CHARS[self._spinner_idx]
+            status_line = f"▸ {spinner} Connecting... | {mode_part}"
+        elif self._status == "connected":
+            status_line = f"▸ 🟢 Connected | {mode_part}"
+        else:
+            status_line = f"▸ 🔴 Disconnected | {mode_part}"
+
         try:
             mode_bar = self.query_one("#mode-bar", Static)
-            mode_bar.update(mode_text)
+            mode_bar.update(status_line)
             mode_bar.remove_class("auto-on", "auto-off")
             mode_bar.add_class("auto-on" if self._auto_on else "auto-off")
         except Exception:
@@ -92,7 +125,7 @@ class ConsoleTab(Widget):
 
     def _send_message(self):
         if not self.app.ws or not self.app.ws.running:
-            self.add_log("[red]! Not connected[/red]")
+            self.add_log("[red]❌ Not connected[/red]")
             return
         inp = self.query_one("#input", PrefixInput)
         msg = inp.value.strip()

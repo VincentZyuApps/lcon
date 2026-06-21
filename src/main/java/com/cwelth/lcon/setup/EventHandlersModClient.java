@@ -38,8 +38,7 @@ public class EventHandlersModClient {
     @SubscribeEvent
     public static void clientTick(TickEvent.PlayerTickEvent event) throws IOException {
         if(!event.player.level().isClientSide) return;
-
-        LocalPlayer player = (LocalPlayer) event.player;
+        if (!(event.player instanceof LocalPlayer player)) return;
         if(player != null)
         {
             if(Config.ENABLE_MOD.get())
