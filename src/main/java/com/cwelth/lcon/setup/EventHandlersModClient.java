@@ -11,7 +11,6 @@ import com.cwelth.lcon.Config;
 import com.cwelth.lcon.LCon;
 import com.cwelth.lcon.server.WSSListener;
 import com.google.gson.Gson;
-import com.google.gson.JsonSerializer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -83,11 +82,33 @@ public class EventHandlersModClient {
 
     @SubscribeEvent
     // 💬 收到聊天消息时调用 — 广播给所有连接的 WS 客户端
+    // 🧠 有两种序列化模式可选：
+    //   - "json"（默认）: 使用 Minecraft 标准的 Component.Serializer.toJson()，
+    //     输出标准 JSON 格式，Python TUI 客户端以此用 json.loads() 解析
+    //   - "tostring": 使用 ComponentContents.toString() 自定义格式，
+    //     保留旧版解析器的兼容性
+    // 📎 通过 lcon-ws-server.toml 中的 serializer_mode 配置项切换
     public static void getChatMessage(ClientChatReceivedEvent event) throws IOException {
         if(LCon.wss != null)
         {
-            Gson gson = new Gson();
-            LCon.wss.broadcast("200:" + gson.toJson(event.getMessage().getContents().toString()));
+            String mode = Config.SERIALIZER_MODE.get();
+            String serialized;
+
+            if ("json".equals(mode)) {
+                // 📦 JSON 模式 — 使用 Minecraft 标准的文本组件 JSON 序列化
+                // ✅ 官方 API，健壮稳定，推荐 Python TUI 使用
+                serialized = Component.Serializer.toJson(event.getMessage());
+            } else if ("tostring".equals(mode)) {
+                // 🔙 tostring 模式 — 使用 ComponentContents.toString() 旧格式
+                // ⚠️ 非标准格式，保留用于向后兼容
+                Gson gson = new Gson();
+                serialized = gson.toJson(event.getMessage().getContents().toString());
+            } else {
+                // 🚨 未知模式 — 回退到 JSON 默认行为
+                serialized = Component.Serializer.toJson(event.getMessage());
+            }
+
+            LCon.wss.broadcast("200:" + serialized);
         }
     }
 }

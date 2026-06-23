@@ -164,9 +164,12 @@ File: `.minecraft/config/lcon-ws-server.toml`
 | `port` | int | `58115` | WebSocket server port |
 | `token` | string | `your_secret_token` | Auth token. Clients pass `?token=xxx` on connect |
 | `command_permission_level` | int | `4` | OP level for `[server]` commands (0-4). 4 = full access without enabling cheats |
+| `serializer_mode` | string | `json` | Component serialization: `json` (recommended for Python TUI) or `tostring` |
 | `enable_message_emoji` | boolean | `true` | Master switch for message emoji |
 | `emoji_*` | string | various | 13 per-message emoji settings (e.g. `emoji_welcome`, `emoji_chat`) |
 | `msg_*` | string | various | 13 per-message text settings (e.g. `msg_welcome`, `msg_chat`) |
+
+> 💡 When using the Python TUI client, set `serializer_mode = "json"` in `lcon-ws-server.toml` for best compatibility.
 
 ## 🏗 Build
 

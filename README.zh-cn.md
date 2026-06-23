@@ -164,9 +164,12 @@ uv run python client/main.py
 | `port` | int | `58115` | WebSocket 服务端端口 |
 | `token` | string | `your_secret_token` | 认证令牌。客户端连接时传 `?token=xxx` |
 | `command_permission_level` | int | `4` | `[server]` 指令的 OP 等级 (0-4)。4 = 不开作弊也能执行所有指令 |
+| `serializer_mode` | string | `json` | 消息序列化方式：`json`（推荐 Python TUI 使用）或 `tostring` |
 | `enable_message_emoji` | boolean | `true` | 消息 emoji 总开关 |
 | `emoji_*` | string | various | 13 条消息的 emoji 设置（如 `emoji_welcome`、`emoji_chat`） |
 | `msg_*` | string | various | 13 条消息的文本设置（如 `msg_welcome`、`msg_chat`） |
+
+> 💡 使用 Python TUI 客户端时，请在 `lcon-ws-server.toml` 中设置 `serializer_mode = "json"` 以获得最佳兼容性。
 
 ## 🏗 构建
 

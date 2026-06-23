@@ -45,3 +45,5 @@ uv run python ./main.py
 set LCON_HOST=192.168.1.100 && set LCON_PORT=58115 && set LCON_TOKEN=your_secret_token
 uv run python ./main.py
 ```
+
+> 💡 When using the Python TUI client, set `serializer_mode = "json"` in `lcon-ws-server.toml` for best compatibility.

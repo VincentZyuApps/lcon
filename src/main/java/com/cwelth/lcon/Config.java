@@ -2,6 +2,14 @@
 // 📄 所有可配置项：端口、token、权限等级、消息文本和 emoji
 // 🧠 使用 ForgeConfigSpec 自动生成 .toml 配置文件
 //     首次运行时自动创建，写入默认值
+// 📂 文件位置：.minecraft/config/lcon-ws-server.toml
+// 📋 配置分类：
+//     - main：模组开关、端口、token、权限、序列化模式
+//     - messages.auth：token 校验相关消息
+//     - messages.welcome：连接欢迎消息
+//     - messages.prefixes：各前缀帮助说明
+//     - messages.status：就绪 / 错误状态消息
+//     - messages.log：控制台日志消息
 
 package com.cwelth.lcon;
 
@@ -22,6 +30,7 @@ public class Config {
     public static ForgeConfigSpec.IntValue PORT;                    // WS 监听端口
     public static ForgeConfigSpec.ConfigValue<String> TOKEN;        // 认证令牌
     public static ForgeConfigSpec.IntValue COMMAND_PERMISSION_LEVEL; // [server] 指令 OP 等级
+    public static ForgeConfigSpec.ConfigValue<String> SERIALIZER_MODE; // 消息序列化模式
 
     // 📢 消息配置（emoji + 文本分离，可分别自定义）
     public static ForgeConfigSpec.BooleanValue ENABLE_MESSAGE_EMOJI; // emoji 总开关
@@ -74,6 +83,7 @@ public class Config {
         PORT = CLIENT_BUILDER.comment("Port to listen on. Default 58115.").defineInRange("port", 58115, 1024, 65535);
         TOKEN = CLIENT_BUILDER.comment("Authentication token. Clients must pass ?token=xxx when connecting.").define("token", "your_secret_token");
         COMMAND_PERMISSION_LEVEL = CLIENT_BUILDER.comment("OP level for [server] commands (0-4). Default 4 = full access without enabling cheats.").defineInRange("command_permission_level", 4, 0, 4);
+        SERIALIZER_MODE = CLIENT_BUILDER.comment("Component serialization mode. 'json' for Minecraft JSON format (recommended for Python TUI), 'tostring' for ComponentContents.toString() format.").define("serializer_mode", "json");
         CLIENT_BUILDER.pop();
 
         // 📢 消息配置块
