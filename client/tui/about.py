@@ -24,7 +24,7 @@ A Forge mod that runs a WebSocket server on the Minecraft **client** (single-pla
 
 ---
 
-**Repository:** [github.com/VincentZyu233/lcon](https://github.com/VincentZyu233/lcon)
+**Repository:** [github.com/VincentZyuApps/lcon](https://github.com/VincentZyuApps/lcon)
 
 **Original Author:** [ZigTheHedge](https://github.com/ZigTheHedge)
 """)

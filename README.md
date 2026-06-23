@@ -1,7 +1,10 @@
 > **[📖 English](README.md)**
 > **[📖 中文](README.zh-cn.md)**
 
-![lcon](https://socialify.git.ci/VincentZyu233/lcon/image?custom_description=Enables+a+WebSocket+Server+on+the+Minecraft+client+for+remote+command+execution+and+chat+control&custom_language=Java&description=1&font=JetBrains+Mono&forks=1&issues=1&language=1&logo=https%3A%2F%2Fgithub.com%2FVincentZyu233%2Flcon%2Fblob%2Fmaster%2Fdocs%2Fimages%2Fminecraft-forge.png%3Fraw%3Dtrue&name=1&owner=1&pulls=1&stargazers=1&theme=Light)
+[![GitHub](https://img.shields.io/badge/GitHub-repo-181717?style=for-the-badge&logo=github)](https://github.com/VincentZyuApps/lcon)
+[![Gitee](https://img.shields.io/badge/Gitee-repo-C71D23?style=for-the-badge&logo=gitee)](https://gitee.com/vincent-zyu/lcon)
+
+![lcon](https://socialify.git.ci/VincentZyuApps/lcon/image?custom_description=Enables+a+WebSocket+Server+on+the+Minecraft+client+for+remote+command+execution+and+chat+control&custom_language=Java&description=1&font=JetBrains+Mono&forks=1&issues=1&language=1&logo=https%3A%2F%2Fgithub.com%2FVincentZyuApps%2Flcon%2Fblob%2Fmaster%2Fdocs%2Fimages%2Fminecraft-forge.png%3Fraw%3Dtrue&name=1&owner=1&pulls=1&stargazers=1&theme=Light)
 
 # 🎮 LCon — WebSocket remote control for Minecraft client
 
@@ -19,10 +22,11 @@
 [![Forge 1.20.1](https://img.shields.io/badge/Forge-1.20.1-FF6600?style=for-the-badge)](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html)
 [![Java 17](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://adoptium.net/temurin/releases/?version=17)
 [![Gradle 8.1.1](https://img.shields.io/badge/Gradle-8.1.1-02303A?style=for-the-badge&logo=gradle&logoColor=white)](https://gradle.org)
-[![Python Client](https://img.shields.io/badge/Python_Client-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://github.com/VincentZyu233/lcon/releases)
 
-[![Last Commit](https://img.shields.io/github/last-commit/VincentZyu233/lcon?style=plastic&label=Last%20Commit&color=6e7681&labelColor=181717)](https://github.com/VincentZyu233/lcon/commits/master)
-[![CI Status](https://img.shields.io/github/actions/workflow/status/VincentZyu233/lcon/build.yml?style=plastic&logo=githubactions&logoColor=white&label=CI%20Status&labelColor=181717)](https://github.com/VincentZyu233/lcon/actions)
+[![Python Client](https://img.shields.io/badge/Python_Client-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://github.com/VincentZyuApps/lcon/releases)
+
+[![Last Commit](https://img.shields.io/github/last-commit/VincentZyuApps/lcon?style=plastic&label=Last%20Commit&color=6e7681&labelColor=181717)](https://github.com/VincentZyuApps/lcon/commits/master)
+[![CI Status](https://img.shields.io/github/actions/workflow/status/VincentZyuApps/lcon/build.yml?style=plastic&logo=githubactions&logoColor=white&label=CI%20Status&labelColor=181717)](https://github.com/VincentZyuApps/lcon/actions)
 
 ## 🧩 What it does
 
@@ -94,7 +98,7 @@ A Textual-based terminal UI with tabbed interface (Console, Commands, Settings, 
 #### 🚀 Quick Start
 
 ```bash
-git clone https://github.com/VincentZyu233/lcon.git
+git clone https://github.com/VincentZyuApps/lcon.git
 cd lcon
 
 uv venv --python 3.13
@@ -150,7 +154,7 @@ A Textual-based terminal UI with tabbed interface (Console, Commands, Settings, 
 ### 🚀 Quick Start
 
 ```bash
-git clone https://github.com/VincentZyu233/lcon.git
+git clone https://github.com/VincentZyuApps/lcon.git
 cd lcon
 
 uv venv --python 3.13
@@ -220,7 +224,7 @@ git commit -m "feat: something; build release"
 | [![Gradle](https://img.shields.io/badge/Gradle-8.1.1-02303A?style=flat-square&logo=gradle&logoColor=white)](https://gradle.org) | 8.1.1 | Build tool |
 | [![Shadow](https://img.shields.io/badge/Shadow-8.1.1-ED8B00?style=flat-square)](https://imperceptiblethoughts.com/shadow/) | 7.1.0 | Fat-jar plugin |
 | [![Java-WebSocket](https://img.shields.io/badge/Java--WebSocket-1.5.6-ED8B00?style=flat-square)](https://github.com/TooTallNate/Java-WebSocket) | 1.5.6 | WebSocket server (fat-jarred) |
-| [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/VincentZyu233/lcon/actions) | — | GitHub CI/CD |
+| [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/VincentZyuApps/lcon/actions) | — | GitHub CI/CD |
 
 ### 🐍 Client (Python TUI)
 
