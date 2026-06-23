@@ -4,7 +4,7 @@
 [![GitHub](https://img.shields.io/badge/GitHub-repo-181717?style=for-the-badge&logo=github)](https://github.com/VincentZyuApps/lcon)
 [![Gitee](https://img.shields.io/badge/Gitee-repo-C71D23?style=for-the-badge&logo=gitee)](https://gitee.com/vincent-zyu/lcon)
 
-![lcon](https://socialify.git.ci/VincentZyuApps/lcon/image?custom_description=Enables+a+WebSocket+Server+on+the+Minecraft+client+for+remote+command+execution+and+chat+control&custom_language=Java&description=1&font=JetBrains+Mono&forks=1&issues=1&language=1&logo=https%3A%2F%2Fgithub.com%2FVincentZyuApps%2Flcon%2Fblob%2Fmaster%2Fdocs%2Fimages%2Fminecraft-forge.png%3Fraw%3Dtrue&name=1&owner=1&pulls=1&stargazers=1&theme=Light)
+![lcon](https://socialify.git.ci/VincentZyuApps/lcon/image?custom_description=Enables+a+WebSocket+Server+on+the+Minecraft+client+for+remote+command+execution+and+chat+control&custom_language=Java&description=1&font=JetBrains+Mono&forks=1&issues=1&language=1&logo=https%3A%2F%2Fgithub.com%2FVincentZyuApps%2Flcon%2Fblob%2Fmaster%2Fdocs%2Fimages%2Fminecraft-forge-solid.png%3Fraw%3Dtrue&name=1&owner=1&pulls=1&stargazers=1&theme=Auto)
 
 # 🎮 LCon — WebSocket remote control for Minecraft client
 
