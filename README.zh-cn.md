@@ -103,6 +103,10 @@ npx wscat -c ws://localhost:58115
 
 基于 Textual 的终端界面，支持标签页切换（Console、Commands、Settings、About）。
 
+<p align="center">
+  <img src="docs/images/previews/preview.textual.tui.ws.client.png" alt="LCon Python TUI 客户端预览" width="800" />
+</p>
+
 #### 🚀 快速开始
 
 ```bash

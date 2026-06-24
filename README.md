@@ -103,6 +103,10 @@ Then send commands with prefixes (`> ` is what you type, `< ` is the server resp
 
 A Textual-based terminal UI with tabbed interface (Console, Commands, Settings, About).
 
+<p align="center">
+  <img src="docs/images/previews/preview.textual.tui.ws.client.png" alt="LCon Python TUI Client Preview" width="800" />
+</p>
+
 #### 🚀 Quick Start
 
 ```bash
