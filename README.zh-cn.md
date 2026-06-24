@@ -58,30 +58,40 @@ LCon 在你进入世界（单人或局域网）时，在 Minecraft 客户端内�
 uv venv --python 3.13
 uv pip install websocket-client
 uv run python -c "
-import websocket
-ws = websocket.create_connection('ws://localhost:58115')
-print(ws.recv())     # 欢迎消息
-ws.send('[server]/say Hello from LCon!')
-print(ws.recv())     # 响应
-ws.close()
+import websocket; ws = websocket.create_connection('ws://localhost:58115?token=your_secret_token')
+while True:
+  msg = ws.recv(); print(msg)
+  if '✅' in msg or 'ready' in msg: break
+ws.send('[server]/say awa!'); print(ws.recv()); ws.close()
 "
 ```
+
+<p align="center">
+  <img src="docs/images/previews/preview.uv.run.python.cli.ws.client.png" alt="Python uv CLI WebSocket 客户端" width="800" />
+</p>
 
 ### 🪢 使用 wscat（npx）
 
 ```bash
-npx wscat -c ws://localhost:58115
+npx wscat -c ws://localhost:58115?token=your_secret_token
 ```
 
 连接成功后，服务端会推送欢迎消息：
 
 ```log
-< 200:Welcome to LCon! Have fun! Don't forget to use prefixes with every message you send to me.
-< 200:Valid prefixes:
-< 200:[chat] - send message to Minecraft chat.
-< 200:[server] - execute server-side command.
-< 201:ready.
+< 🎉 200:Welcome to LCon! Have fun! Don't forget to use prefixes with every message you send to me.
+< 📋 200:Valid prefixes:
+< 💬 200:[chat] - send message to Minecraft chat.
+< 📩 200:[message] - display message for player only.
+< 🔔 200:[system] - display system message in chat (for player only).
+< 🖥️ 200:[client] - execute client-side command.
+< 🖧 200:[server] - execute server-side command.
+< ✅ 201:ready.
 ```
+
+<p align="center">
+  <img src="docs/images/previews/preview.npx.wscat.cli.ws.client.png" alt="npx wscat CLI WebSocket 客户端" width="800" />
+</p>
 
 然后发送带前缀的指令（`> `是你输入，`< `是服务端响应）：
 
@@ -95,8 +105,8 @@ npx wscat -c ws://localhost:58115
 > [server]/give @s diamond 64
 # (指令已执行 — 钻石出现在背包)
 
-> unknown
-#  400:Error! Send message prefix first! [chat], [message], [system], [client], [server] are valid prefixes.
+> unknown-qwq
+< ❌ 400:Error! Send message prefix first! [chat], [message], [system], [client], [server] are valid prefixes.
 ```
 
 ### 🐍 Python 客户端 (TUI)
