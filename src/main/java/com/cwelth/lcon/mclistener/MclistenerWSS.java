@@ -69,8 +69,7 @@ public class MclistenerWSS extends WebSocketServer {
                 case "chat_platform_to_server" -> handleChatPlatform(ws, json);
 
                 // 🎮 远程指令执行（兼容两种 type 名）
-                case "execute_command":
-                case "external_command_to_server" -> handleExecuteCommand(ws, json);
+                case "execute_command", "external_command_to_server" -> handleExecuteCommand(ws, json);
 
                 // 🔑 后连接鉴权消息（忽略即可，已在 URL 参数完成鉴权）
                 case "auth" -> {}
