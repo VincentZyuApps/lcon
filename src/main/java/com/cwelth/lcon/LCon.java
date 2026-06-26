@@ -48,7 +48,7 @@ public class LCon
         // ⚙️ 注册客户端配置（生成 lcon-ws-server.toml）
         // 📄 文件位置：.minecraft/config/lcon-ws-server.toml
         // 📝 配置项包括：端口、token、权限等级、消息文本和 emoji
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_CONFIG);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_CONFIG, MODID + "-ws-server.toml");
 
         // 📂 从磁盘加载配置文件
         // 🧠 如果文件不存在则使用默认值创建
