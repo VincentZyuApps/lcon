@@ -31,12 +31,17 @@ import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = LCon.MODID)
 public class EventHandlersModClient {
     // 🪵 日志记录器
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final long PLAYER_LIFECYCLE_DEDUPE_WINDOW_MS = 2000L;
+    private static final Map<String, Long> RECENT_PLAYER_LIFECYCLE_EVENTS = new HashMap<>();
 
     @SubscribeEvent
     // 🎨 创造模式标签页（暂无自定义物品，保留为空）
@@ -54,10 +59,13 @@ public class EventHandlersModClient {
         if (!Config.ENABLE_MCLISTENER.get() || !Config.ENABLE_PLAYER_JOIN_BROADCAST.get()) return;
         if (LCon.mclistenerWss == null) return;
         if (event.getEntity() instanceof Player player) {
+            if (!player.level().isClientSide) return;
+            if (isDuplicatePlayerLifecycleEvent("player_join", player)) return;
             String playerName = player.getScoreboardName();
             JsonObject json = new JsonObject();
             json.addProperty("type", "player_join");
             json.addProperty("player_name", playerName);
+            json.addProperty("player_uuid", player.getUUID().toString());
             LCon.mclistenerWss.broadcastJson(json.toString());
             LOGGER.info("📢 [Mclistener] 玩家加入广播: {}", playerName);
         }
@@ -69,12 +77,40 @@ public class EventHandlersModClient {
         if (!Config.ENABLE_MCLISTENER.get() || !Config.ENABLE_PLAYER_LEAVE_BROADCAST.get()) return;
         if (LCon.mclistenerWss == null) return;
         if (event.getEntity() instanceof Player player) {
+            if (!player.level().isClientSide) return;
+            if (isDuplicatePlayerLifecycleEvent("player_leave", player)) return;
             String playerName = player.getScoreboardName();
             JsonObject json = new JsonObject();
             json.addProperty("type", "player_leave");
             json.addProperty("player_name", playerName);
+            json.addProperty("player_uuid", player.getUUID().toString());
             LCon.mclistenerWss.broadcastJson(json.toString());
             LOGGER.info("📢 [Mclistener] 玩家离开广播: {}", playerName);
+        }
+    }
+
+    private static boolean isDuplicatePlayerLifecycleEvent(String type, Player player) {
+        long now = System.currentTimeMillis();
+        pruneRecentPlayerLifecycleEvents(now);
+
+        String key = type + ":" + player.getUUID();
+        Long lastAt = RECENT_PLAYER_LIFECYCLE_EVENTS.put(key, now);
+        if (lastAt == null) return false;
+
+        boolean duplicate = now - lastAt <= PLAYER_LIFECYCLE_DEDUPE_WINDOW_MS;
+        if (duplicate) {
+            LOGGER.debug("🔁 [Mclistener] 跳过重复玩家生命周期事件: {} {}", type, player.getScoreboardName());
+        }
+        return duplicate;
+    }
+
+    private static void pruneRecentPlayerLifecycleEvents(long now) {
+        Iterator<Map.Entry<String, Long>> iterator = RECENT_PLAYER_LIFECYCLE_EVENTS.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Long> entry = iterator.next();
+            if (now - entry.getValue() > PLAYER_LIFECYCLE_DEDUPE_WINDOW_MS) {
+                iterator.remove();
+            }
         }
     }
 
@@ -164,6 +200,7 @@ public class EventHandlersModClient {
 
         // 🧹 清空指令追踪器
         LCon.commandTracker = null;
+        RECENT_PLAYER_LIFECYCLE_EVENTS.clear();
     }
 
     @SubscribeEvent
