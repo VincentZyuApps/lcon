@@ -201,7 +201,7 @@ public class MclistenerWSS extends WebSocketServer {
         json.addProperty("request_id", requestId == null ? "" : requestId);
         json.addProperty("command", command == null ? "" : command);
         json.addProperty("ok", ok);
-        json.addProperty("output", output == null ? "" : output);
+        json.addProperty("result", output == null ? "" : output);
         if (error != null && !error.isBlank()) {
             json.addProperty("error", error);
         }

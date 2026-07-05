@@ -153,7 +153,7 @@ public class CommandTracker {
         json.addProperty("request_id", entry.requestId);
         json.addProperty("command",    entry.command);
         json.addProperty("ok",         true);
-        json.addProperty("output",     output);
+        json.addProperty("result",     output);
 
         try {
             if (entry.ws != null && entry.ws.isOpen()) {
