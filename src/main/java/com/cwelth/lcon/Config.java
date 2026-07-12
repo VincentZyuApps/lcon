@@ -83,6 +83,8 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<String> MCLISTENER_TOKEN;      // 🔑 认证令牌
     public static ForgeConfigSpec.BooleanValue ENABLE_PLAYER_JOIN_BROADCAST;  // 📢 玩家加入广播
     public static ForgeConfigSpec.BooleanValue ENABLE_PLAYER_LEAVE_BROADCAST; // 📢 玩家离开广播
+    public static ForgeConfigSpec.ConfigValue<String> PLAYER_LIFECYCLE_SOURCE; // 🚪 玩家上下线事件来源
+    public static ForgeConfigSpec.BooleanValue BROADCAST_PLAYER_LEAVE_ON_SERVER_STOP; // 🛑 服务器关闭时逐个广播离开
     public static ForgeConfigSpec.BooleanValue ENABLE_PLAYER_CHAT_BROADCAST;  // 💬 聊天广播
     public static ForgeConfigSpec.ConfigValue<String> PLAYER_CHAT_CAPTURE_MODE; // 💬 聊天捕获模式：event | text | both
     public static ForgeConfigSpec.BooleanValue ENABLE_RECEIVE_GROUP_MESSAGE;  // 📩 接收群消息
@@ -181,6 +183,19 @@ public class Config {
         ENABLE_PLAYER_LEAVE_BROADCAST = CLIENT_BUILDER
             .comment("📢 Broadcast player leave events via mclistener ({\\\"type\\\":\\\"player_leave\\\", ...})")
             .define("enable_player_leave_broadcast", true);
+
+        PLAYER_LIFECYCLE_SOURCE = CLIENT_BUILDER
+            .comment(
+                "🚪 Player lifecycle source. Changes take effect after leaving and re-entering the world.",
+                "server_event = use integrated server PlayerLoggedInEvent / PlayerLoggedOutEvent (recommended)",
+                "client_entity_tracking = use client entity load/unload events (legacy compatibility; may report false join/leave events)",
+                "A future version may add a tablist source for clients connected to external servers"
+            )
+            .define("player_lifecycle_source", "server_event");
+
+        BROADCAST_PLAYER_LEAVE_ON_SERVER_STOP = CLIENT_BUILDER
+            .comment("🛑 Broadcast player_leave for every tracked online player when the integrated server stops")
+            .define("broadcast_player_leave_on_server_stop", false);
 
         ENABLE_PLAYER_CHAT_BROADCAST = CLIENT_BUILDER
             .comment("💬 Broadcast player chat messages via mclistener ({\\\"type\\\":\\\"player_chat\\\", ...})")

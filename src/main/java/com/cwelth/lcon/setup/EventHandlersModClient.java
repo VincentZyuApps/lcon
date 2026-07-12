@@ -26,6 +26,9 @@ import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
@@ -33,15 +36,22 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = LCon.MODID)
 public class EventHandlersModClient {
     // 🪵 日志记录器
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final String LIFECYCLE_SOURCE_SERVER_EVENT = "server_event";
+    private static final String LIFECYCLE_SOURCE_CLIENT_ENTITY_TRACKING = "client_entity_tracking";
     private static final long PLAYER_LIFECYCLE_DEDUPE_WINDOW_MS = 2000L;
     private static final Map<String, Long> RECENT_PLAYER_LIFECYCLE_EVENTS = new HashMap<>();
+    private static final Map<UUID, String> SERVER_ONLINE_PLAYERS = new ConcurrentHashMap<>();
+    private static volatile String activePlayerLifecycleSource = null;
+    private static volatile boolean integratedServerStopping = false;
 
     @SubscribeEvent
     // 🎨 创造模式标签页（暂无自定义物品，保留为空）
@@ -56,37 +66,118 @@ public class EventHandlersModClient {
     // 🚪 玩家进入世界时触发 — 广播 player_join 到 mclistener 客户端
     // 🧠 监听所有 Player 类型实体加入（包含本地玩家和其他在线玩家）
     public static void entityJoinLevel(EntityJoinLevelEvent event) {
+        if (!usesPlayerLifecycleSource(LIFECYCLE_SOURCE_CLIENT_ENTITY_TRACKING)) return;
         if (!Config.ENABLE_MCLISTENER.get() || !Config.ENABLE_PLAYER_JOIN_BROADCAST.get()) return;
         if (LCon.mclistenerWss == null) return;
         if (event.getEntity() instanceof Player player) {
             if (!player.level().isClientSide) return;
             if (isDuplicatePlayerLifecycleEvent("player_join", player)) return;
-            String playerName = player.getScoreboardName();
-            JsonObject json = new JsonObject();
-            json.addProperty("type", "player_join");
-            json.addProperty("player_name", playerName);
-            json.addProperty("player_uuid", player.getUUID().toString());
-            LCon.mclistenerWss.broadcastJson(json.toString());
-            LOGGER.info("📢 [Mclistener] 玩家加入广播: {}", playerName);
+            broadcastPlayerLifecycleEvent("player_join", player.getScoreboardName(), player.getUUID());
         }
     }
 
     @SubscribeEvent
     // 🚪 玩家离开世界时触发 — 广播 player_leave 到 mclistener 客户端
     public static void entityLeaveLevel(EntityLeaveLevelEvent event) {
+        if (!usesPlayerLifecycleSource(LIFECYCLE_SOURCE_CLIENT_ENTITY_TRACKING)) return;
         if (!Config.ENABLE_MCLISTENER.get() || !Config.ENABLE_PLAYER_LEAVE_BROADCAST.get()) return;
         if (LCon.mclistenerWss == null) return;
         if (event.getEntity() instanceof Player player) {
             if (!player.level().isClientSide) return;
             if (isDuplicatePlayerLifecycleEvent("player_leave", player)) return;
-            String playerName = player.getScoreboardName();
-            JsonObject json = new JsonObject();
-            json.addProperty("type", "player_leave");
-            json.addProperty("player_name", playerName);
-            json.addProperty("player_uuid", player.getUUID().toString());
-            LCon.mclistenerWss.broadcastJson(json.toString());
-            LOGGER.info("📢 [Mclistener] 玩家离开广播: {}", playerName);
+            broadcastPlayerLifecycleEvent("player_leave", player.getScoreboardName(), player.getUUID());
         }
+    }
+
+    @SubscribeEvent
+    // 🚪 集成服务器确认玩家登录后触发，是局域网开放场景的权威在线状态来源
+    public static void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!usesPlayerLifecycleSource(LIFECYCLE_SOURCE_SERVER_EVENT)) return;
+        Player player = event.getEntity();
+        if (player.level().isClientSide) return;
+
+        String playerName = player.getScoreboardName();
+        UUID playerUuid = player.getUUID();
+        if (SERVER_ONLINE_PLAYERS.putIfAbsent(playerUuid, playerName) != null) return;
+
+        if (!Config.ENABLE_MCLISTENER.get() || !Config.ENABLE_PLAYER_JOIN_BROADCAST.get()) return;
+        if (LCon.mclistenerWss == null) return;
+        broadcastPlayerLifecycleEvent("player_join", playerName, playerUuid);
+    }
+
+    @SubscribeEvent
+    // 🚪 集成服务器确认玩家退出后触发，不受客户端实体追踪范围影响
+    public static void playerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (!usesPlayerLifecycleSource(LIFECYCLE_SOURCE_SERVER_EVENT)) return;
+        Player player = event.getEntity();
+        if (player.level().isClientSide) return;
+
+        UUID playerUuid = player.getUUID();
+        String playerName = SERVER_ONLINE_PLAYERS.remove(playerUuid);
+        if (playerName == null || integratedServerStopping) return;
+
+        if (!Config.ENABLE_MCLISTENER.get() || !Config.ENABLE_PLAYER_LEAVE_BROADCAST.get()) return;
+        if (LCon.mclistenerWss == null) return;
+        broadcastPlayerLifecycleEvent("player_leave", playerName, playerUuid);
+    }
+
+    @SubscribeEvent
+    public static void serverStopping(ServerStoppingEvent event) {
+        integratedServerStopping = true;
+        if (!usesPlayerLifecycleSource(LIFECYCLE_SOURCE_SERVER_EVENT)) return;
+
+        if (Config.BROADCAST_PLAYER_LEAVE_ON_SERVER_STOP.get()
+            && Config.ENABLE_MCLISTENER.get()
+            && Config.ENABLE_PLAYER_LEAVE_BROADCAST.get()
+            && LCon.mclistenerWss != null) {
+            SERVER_ONLINE_PLAYERS.forEach((uuid, playerName) ->
+                broadcastPlayerLifecycleEvent("player_leave", playerName, uuid));
+        }
+        SERVER_ONLINE_PLAYERS.clear();
+    }
+
+    @SubscribeEvent
+    public static void serverStopped(ServerStoppedEvent event) {
+        resetPlayerLifecycleState();
+    }
+
+    private static void broadcastPlayerLifecycleEvent(String type, String playerName, UUID playerUuid) {
+        JsonObject json = new JsonObject();
+        json.addProperty("type", type);
+        json.addProperty("player_name", playerName);
+        json.addProperty("player_uuid", playerUuid.toString());
+        LCon.mclistenerWss.broadcastJson(json.toString());
+
+        String action = "player_join".equals(type) ? "加入" : "离开";
+        LOGGER.info("📢 [Mclistener] 玩家{}广播: {}", action, playerName);
+    }
+
+    private static boolean usesPlayerLifecycleSource(String source) {
+        return source.equals(getActivePlayerLifecycleSource());
+    }
+
+    private static synchronized String getActivePlayerLifecycleSource() {
+        if (activePlayerLifecycleSource != null) return activePlayerLifecycleSource;
+
+        String configuredSource = Config.PLAYER_LIFECYCLE_SOURCE.get().trim().toLowerCase(Locale.ROOT);
+        if (LIFECYCLE_SOURCE_SERVER_EVENT.equals(configuredSource)
+            || LIFECYCLE_SOURCE_CLIENT_ENTITY_TRACKING.equals(configuredSource)) {
+            activePlayerLifecycleSource = configuredSource;
+        } else {
+            activePlayerLifecycleSource = LIFECYCLE_SOURCE_SERVER_EVENT;
+            LOGGER.warn("⚠️ [Mclistener] 未知 player_lifecycle_source: {}，已回退到 {}",
+                configuredSource, LIFECYCLE_SOURCE_SERVER_EVENT);
+        }
+
+        LOGGER.info("🚪 [Mclistener] 本次世界会话使用玩家生命周期来源: {}", activePlayerLifecycleSource);
+        return activePlayerLifecycleSource;
+    }
+
+    private static void resetPlayerLifecycleState() {
+        activePlayerLifecycleSource = null;
+        integratedServerStopping = false;
+        SERVER_ONLINE_PLAYERS.clear();
+        RECENT_PLAYER_LIFECYCLE_EVENTS.clear();
     }
 
     private static boolean isDuplicatePlayerLifecycleEvent(String type, Player player) {
@@ -175,7 +266,7 @@ public class EventHandlersModClient {
 
     @SubscribeEvent
     // 🚪 玩家登出时调用 — 关闭所有 WS 服务端
-    public void logOut(ClientPlayerNetworkEvent.LoggingOut event){
+    public static void logOut(ClientPlayerNetworkEvent.LoggingOut event){
         if(event.getConnection() == null) return;
 
         // 🔌 关闭旧前缀协议 WS 服务端
@@ -200,7 +291,7 @@ public class EventHandlersModClient {
 
         // 🧹 清空指令追踪器
         LCon.commandTracker = null;
-        RECENT_PLAYER_LIFECYCLE_EVENTS.clear();
+        resetPlayerLifecycleState();
     }
 
     @SubscribeEvent

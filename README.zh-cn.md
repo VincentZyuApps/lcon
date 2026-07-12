@@ -188,6 +188,8 @@ uv run python client/main.py
 | `[mclistener].token` | string | `""` | mclistener 认证令牌。空字符串表示不校验 |
 | `[mclistener].enable_player_join_broadcast` | boolean | `true` | 向 mclistener 客户端广播 `player_join` 事件 |
 | `[mclistener].enable_player_leave_broadcast` | boolean | `true` | 向 mclistener 客户端广播 `player_leave` 事件 |
+| `[mclistener].player_lifecycle_source` | string | `server_event` | 玩家生命周期来源：`server_event`（集成服务器/局域网开放场景推荐）或 `client_entity_tracking`（旧行为兼容，可能误报） |
+| `[mclistener].broadcast_player_leave_on_server_stop` | boolean | `false` | 在 `server_event` 模式下，集成服务器停止时为所有已追踪玩家广播 `player_leave` |
 | `[mclistener].enable_player_chat_broadcast` | boolean | `true` | 向 mclistener 客户端广播 `player_chat` 事件 |
 | `[mclistener].player_chat_capture_mode` | string | `event` | 玩家聊天捕获模式：`event`（推荐）、`text` 或 `both` |
 | `[mclistener].enable_receive_group_message` | boolean | `true` | 接收 `chat_platform_to_server` 消息并转发到游戏内 |
@@ -198,6 +200,8 @@ uv run python client/main.py
 > 💡 使用 Python TUI 客户端时，请在 `lcon-ws-server.toml` 中设置 `serializer_mode = "json"` 以获得最佳兼容性。
 >
 > 💡 对于 mclistener 的远程指令执行，除非你明确需要 best-effort 并行追踪，否则建议保持 `command_tracking_mode = "single"`。
+>
+> 💡 修改 `player_lifecycle_source` 后需要退出并重新进入世界才会生效。未来可能增加基于 Tab 在线列表的来源，用于连接外部服务器的客户端场景。
 
 ## 🏗 构建
 

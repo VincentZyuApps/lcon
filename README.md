@@ -188,6 +188,8 @@ File: `.minecraft/config/lcon-ws-server.toml`
 | `[mclistener].token` | string | `""` | Auth token for mclistener. Empty = no auth |
 | `[mclistener].enable_player_join_broadcast` | boolean | `true` | Broadcast `player_join` events to mclistener clients |
 | `[mclistener].enable_player_leave_broadcast` | boolean | `true` | Broadcast `player_leave` events to mclistener clients |
+| `[mclistener].player_lifecycle_source` | string | `server_event` | Lifecycle source: `server_event` (recommended for integrated/LAN servers) or `client_entity_tracking` (legacy compatibility; may report false events) |
+| `[mclistener].broadcast_player_leave_on_server_stop` | boolean | `false` | In `server_event` mode, broadcast `player_leave` for every tracked player when the integrated server stops |
 | `[mclistener].enable_player_chat_broadcast` | boolean | `true` | Broadcast `player_chat` events to mclistener clients |
 | `[mclistener].player_chat_capture_mode` | string | `event` | Player chat capture mode: `event` (recommended), `text`, or `both` |
 | `[mclistener].enable_receive_group_message` | boolean | `true` | Accept `chat_platform_to_server` messages and relay them in-game |
@@ -198,6 +200,8 @@ File: `.minecraft/config/lcon-ws-server.toml`
 > 💡 When using the Python TUI client, set `serializer_mode = "json"` in `lcon-ws-server.toml` for best compatibility.
 >
 > 💡 For mclistener command execution, keep `command_tracking_mode = "single"` unless you explicitly want best-effort parallel tracking.
+>
+> 💡 Changes to `player_lifecycle_source` take effect after leaving and re-entering the world. A future version may add a tab-list source for clients connected to external servers.
 
 ## 🏗 Build
 
