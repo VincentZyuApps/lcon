@@ -88,6 +88,7 @@ public class Config {
     public static ForgeConfigSpec.BooleanValue ENABLE_PLAYER_CHAT_BROADCAST;  // 💬 聊天广播
     public static ForgeConfigSpec.ConfigValue<String> PLAYER_CHAT_CAPTURE_MODE; // 💬 聊天捕获模式：event | text | both
     public static ForgeConfigSpec.BooleanValue ENABLE_RECEIVE_GROUP_MESSAGE;  // 📩 接收群消息
+    public static ForgeConfigSpec.ConfigValue<String> GROUP_MESSAGE_DELIVERY_MODE; // 📬 群消息投递模式：broadcast | local
     public static ForgeConfigSpec.ConfigValue<String> GROUP_MESSAGE_FORMAT;  // ✏️ 群消息游戏内显示格式
     public static ForgeConfigSpec.ConfigValue<String> EXEC_COMMAND_MODE;     // 🎮 远程指令模式：disabled | client
     public static ForgeConfigSpec.ConfigValue<String> COMMAND_TRACKING_MODE; // 🎯 指令追踪模式：single | parallel（parallel 为实验性模式，可能不稳定或串线）
@@ -208,6 +209,14 @@ public class Config {
         ENABLE_RECEIVE_GROUP_MESSAGE = CLIENT_BUILDER
             .comment("📩 Receive chat_platform_to_server messages and broadcast them to all players on the integrated server; falls back to local display without one")
             .define("enable_receive_group_message", true);
+
+        GROUP_MESSAGE_DELIVERY_MODE = CLIENT_BUILDER
+            .comment(
+                "📬 Group message delivery mode:",
+                "broadcast = broadcast to all players on the integrated server (recommended; falls back to local display without one)",
+                "local = display only to the client running LCon"
+            )
+            .defineInList("group_message_delivery_mode", "broadcast", List.of("broadcast", "local"));
 
         GROUP_MESSAGE_FORMAT = CLIENT_BUILDER
             .comment("✏️ In-game display format for group messages. Placeholders: {group_id} {group_name} {nickname} {message}")

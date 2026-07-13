@@ -193,6 +193,7 @@ File: `.minecraft/config/lcon-ws-server.toml`
 | `[mclistener].enable_player_chat_broadcast` | boolean | `true` | Broadcast `player_chat` events to mclistener clients |
 | `[mclistener].player_chat_capture_mode` | string | `event` | Player chat capture mode: `event` (recommended), `text`, or `both` |
 | `[mclistener].enable_receive_group_message` | boolean | `true` | Accept `chat_platform_to_server` messages and broadcast them to all players on the integrated server; falls back to local display without one |
+| `[mclistener].group_message_delivery_mode` | string | `broadcast` | Group message delivery: `broadcast` sends to all integrated-server players, while `local` displays only to the LCon client |
 | `[mclistener].group_message_format` | string | `§6§l[{group_name}]§r §7({group_id})§r §a§o{nickname}§r§f: {message}` | In-game format for relayed group messages |
 | `[mclistener].exec_command_mode` | string | `disabled` | Remote command execution mode: `disabled` or `client` |
 | `[mclistener].command_tracking_mode` | string | `single` | Command tracking mode: `single` (recommended) or `parallel` (experimental, may be unstable or produce mixed results) |

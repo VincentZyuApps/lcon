@@ -99,10 +99,23 @@ public class MclistenerWSS extends WebSocketServer {
             .replace("{group_name}", groupName)
             .replace("{nickname}",   nickname)
             .replace("{message}",    message);
+        String deliveryMode = Config.GROUP_MESSAGE_DELIVERY_MODE.get();
 
-        // 先切到客户端主线程获取集成服务器，再切到服务器线程广播给所有在线玩家
+        // local 仅显示给房主；broadcast 通过集成服务器广播给所有在线玩家
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.execute(() -> {
+            if ("local".equals(deliveryMode)) {
+                if (minecraft.player != null) {
+                    minecraft.player.sendSystemMessage(Component.literal(formatted));
+                    LOGGER.info("📩 [群→服] 已按 local 模式显示给本地玩家: [{}] {}: {}",
+                        groupName, nickname, message);
+                } else {
+                    LOGGER.warn("⚠️ [群→服] local 模式下没有可用的本地玩家，消息未投递: [{}] {}: {}",
+                        groupName, nickname, message);
+                }
+                return;
+            }
+
             MinecraftServer server = minecraft.getSingleplayerServer();
             if (server != null) {
                 server.execute(() -> {
@@ -112,10 +125,10 @@ public class MclistenerWSS extends WebSocketServer {
                 });
             } else if (minecraft.player != null) {
                 minecraft.player.sendSystemMessage(Component.literal(formatted));
-                LOGGER.warn("⚠️ [群→服] 当前没有集成服务器，消息仅显示给本地玩家: [{}] {}: {}",
+                LOGGER.warn("⚠️ [群→服] broadcast 模式下没有集成服务器，消息已回退为仅显示给本地玩家: [{}] {}: {}",
                     groupName, nickname, message);
             } else {
-                LOGGER.warn("⚠️ [群→服] 当前没有可用的集成服务器或本地玩家，消息未投递: [{}] {}: {}",
+                LOGGER.warn("⚠️ [群→服] broadcast 模式下没有可用的集成服务器或本地玩家，消息未投递: [{}] {}: {}",
                     groupName, nickname, message);
             }
         });
