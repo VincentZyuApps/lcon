@@ -6,7 +6,7 @@
 // 📋 消息处理流程：
 //     1. onOpen → token 校验 → 发送 ready
 //     2. onMessage → 解析 JSON → 按 type 分发
-//        - chat_platform_to_server → 显示到游戏内聊天栏
+//        - chat_platform_to_server → 广播到集成服务器内所有玩家的聊天栏
 //        - execute_command / external_command_to_server → 执行 + 追踪输出
 //     3. onClose → 清理该客户端的指令追踪
 //     4. onError → 记录日志 + 通知客户端
@@ -21,6 +21,7 @@ import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -99,14 +100,25 @@ public class MclistenerWSS extends WebSocketServer {
             .replace("{nickname}",   nickname)
             .replace("{message}",    message);
 
-        // 在主线程显示到游戏聊天栏
-        Minecraft.getInstance().execute(() -> {
-            if (Minecraft.getInstance().player != null) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.literal(formatted));
+        // 先切到客户端主线程获取集成服务器，再切到服务器线程广播给所有在线玩家
+        Minecraft minecraft = Minecraft.getInstance();
+        minecraft.execute(() -> {
+            MinecraftServer server = minecraft.getSingleplayerServer();
+            if (server != null) {
+                server.execute(() -> {
+                    server.getPlayerList().broadcastSystemMessage(Component.literal(formatted), false);
+                    LOGGER.info("📩 [群→服] 已广播给 {} 名在线玩家: [{}] {}: {}",
+                        server.getPlayerCount(), groupName, nickname, message);
+                });
+            } else if (minecraft.player != null) {
+                minecraft.player.sendSystemMessage(Component.literal(formatted));
+                LOGGER.warn("⚠️ [群→服] 当前没有集成服务器，消息仅显示给本地玩家: [{}] {}: {}",
+                    groupName, nickname, message);
+            } else {
+                LOGGER.warn("⚠️ [群→服] 当前没有可用的集成服务器或本地玩家，消息未投递: [{}] {}: {}",
+                    groupName, nickname, message);
             }
         });
-
-        LOGGER.info("📩 [群→服] [{}] {}: {}", groupName, nickname, message);
     }
 
     // 🎮 处理远程指令执行请求

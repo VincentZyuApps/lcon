@@ -206,7 +206,7 @@ public class Config {
             .define("player_chat_capture_mode", "event");
 
         ENABLE_RECEIVE_GROUP_MESSAGE = CLIENT_BUILDER
-            .comment("📩 Receive chat_platform_to_server messages and relay to in-game chat")
+            .comment("📩 Receive chat_platform_to_server messages and broadcast them to all players on the integrated server; falls back to local display without one")
             .define("enable_receive_group_message", true);
 
         GROUP_MESSAGE_FORMAT = CLIENT_BUILDER

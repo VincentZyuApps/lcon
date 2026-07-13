@@ -192,7 +192,7 @@ uv run python client/main.py
 | `[mclistener].broadcast_player_leave_on_server_stop` | boolean | `false` | 在 `server_event` 模式下，集成服务器停止时为所有已追踪玩家广播 `player_leave` |
 | `[mclistener].enable_player_chat_broadcast` | boolean | `true` | 向 mclistener 客户端广播 `player_chat` 事件 |
 | `[mclistener].player_chat_capture_mode` | string | `event` | 玩家聊天捕获模式：`event`（推荐）、`text` 或 `both` |
-| `[mclistener].enable_receive_group_message` | boolean | `true` | 接收 `chat_platform_to_server` 消息并转发到游戏内 |
+| `[mclistener].enable_receive_group_message` | boolean | `true` | 接收 `chat_platform_to_server` 消息并广播给集成服务器内所有玩家；没有集成服务器时回退为仅本地显示 |
 | `[mclistener].group_message_format` | string | `§6§l[{group_name}]§r §7({group_id})§r §a§o{nickname}§r§f: {message}` | 群消息转发到游戏内时的显示格式 |
 | `[mclistener].exec_command_mode` | string | `disabled` | 远程指令执行模式：`disabled` 或 `client` |
 | `[mclistener].command_tracking_mode` | string | `single` | 指令追踪模式：`single`（推荐）或 `parallel`（实验性，可能不稳定或串线） |
