@@ -82,9 +82,12 @@ flowchart TD
 使用以上示例时，工作流会生成：
 
 ```text
+标题：v1.4.0
 标签：v1.20.1-1.4.0
 产物：lcon-v1.20.1-1.4.0.jar
 ```
+
+GitHub Release 的可见标题只保留模组版本号。标签和产物名称继续包含 Minecraft 版本，以便区分面向不同 Minecraft 版本的发布。
 
 版本号包含 `-alpha` 时，生成的发布说明会标记为 alpha 类型；包含 `-beta` 时会标记为 beta 类型；其他版本使用普通 release 类型。
 

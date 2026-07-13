@@ -82,9 +82,12 @@ The workflow reads these values from `gradle.properties`:
 With the examples above, the workflow produces:
 
 ```text
+Title:    v1.4.0
 Tag:      v1.20.1-1.4.0
 Artifact: lcon-v1.20.1-1.4.0.jar
 ```
+
+The visible GitHub Release title contains only the mod version. The tag and artifact keep the Minecraft version so releases for different Minecraft versions remain distinguishable.
 
 Versions containing `-alpha` create an alpha prerelease type, versions containing `-beta` create a beta prerelease type, and all other versions use the normal release type in generated release notes.
 
